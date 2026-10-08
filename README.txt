@@ -82,8 +82,3 @@ assets/icon-*.png           웹앱 아이콘
 Galmuri 2.40.3 — Copyright (c) 2019–2025 Lee Minseo.
 SIL Open Font License 1.1. 전체 고지는 assets/OFL.txt 참고.
 폰트 원본: https://github.com/quiple/galmuri
-
-디자인 검토
-별도 검토 에이전트가 예술 출판의 절제된 편집과 Apple 모바일 사용성
-관점으로 화면을 검토했습니다. 실제 기관 또는 소속 디자이너의 검토나
-공식 승인을 받은 것은 아닙니다.
