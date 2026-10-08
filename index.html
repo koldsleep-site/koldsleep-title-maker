@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>koldsleep Title / Post Maker</title>
+
+<meta name="theme-color" content="#f7f7f4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="koldsleep">
+<meta name="application-name" content="koldsleep Maker">
+<meta name="description" content="koldsleep 타이틀과 게시글을 만들고 PNG로 저장하세요.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./assets/icon-180.png">
+<link rel="icon" href="./assets/icon-192.png" type="image/png">
+<link rel="stylesheet" href="./assets/galmuri.css">
+
+<style>
+  :root{
+    --ui-bg:#f2f2f2;
+    --ui-line:#cfcfcf;
+    --ui-text:#111;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    min-height:100%;
+    background:#fff;
+    color:var(--ui-text);
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  }
+
+  body{ padding:16px; }
+
+  .app{
+    width:min(1500px,100%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:336px minmax(0,1fr);
+    gap:16px;
+    align-items:start;
+  }
+
+  .panel{
+    background:var(--ui-bg);
+    border:1px solid var(--ui-line);
+    padding:12px;
+    position:sticky;
+    top:16px;
+    max-height:calc(100vh - 32px);
+    overflow:auto;
+  }
+
+  h1{
+    font-size:14px;
+    line-height:1.2;
+    margin:0 0 12px;
+    font-weight:700;
+  }
+
+  .group{
+    border-top:1px solid var(--ui-line);
+    padding-top:10px;
+    margin-top:10px;
+  }
+
+  .group:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:0;
+  }
+
+  label{
+    display:block;
+    font-size:11px;
+    line-height:1.25;
+    margin:0 0 5px;
+  }
+
+  textarea,
+  input[type="number"],
+  input[type="range"],
+  input[type="file"],
+  button{
+    width:100%;
+    font:inherit;
+  }
+
+  textarea,
+  input[type="number"]{
+    border:1px solid #aaa;
+    background:#fff;
+    color:#000;
+  }
+
+  textarea{
+    min-height:128px;
+    resize:vertical;
+    padding:7px;
+    font-family:Menlo,Monaco,monospace;
+    font-size:12px;
+    line-height:1.35;
+  }
+
+  input[type="number"]{
+    height:30px;
+    padding:4px 6px;
+    font-size:12px;
+  }
+
+  input[type="file"]{ font-size:11px; }
+  input[type="range"]{ margin:0; }
+
+  .row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .check{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:12px;
+    margin:7px 0;
+  }
+
+  .check input{
+    width:auto;
+    margin:0;
+  }
+
+  .range-line{
+    display:grid;
+    grid-template-columns:1fr 50px;
+    gap:8px;
+    align-items:center;
+  }
+
+  .value{
+    font-family:Menlo,Monaco,monospace;
+    font-size:10px;
+    text-align:right;
+  }
+
+  button{
+    border:1px solid #111;
+    background:#fff;
+    color:#000;
+    padding:8px 8px;
+    cursor:pointer;
+    font-size:11px;
+  }
+
+  button.primary{
+    background:#000;
+    color:#fff;
+  }
+
+  .buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+  }
+
+  .segmented{
+    display:grid;
+    gap:5px;
+  }
+
+  .segmented.two{ grid-template-columns:repeat(2,1fr); }
+  .segmented.three{ grid-template-columns:repeat(3,1fr); }
+  .segmented.four{ grid-template-columns:repeat(4,1fr); }
+
+  .segmented button{
+    padding:7px 3px;
+  }
+
+  .segmented button.active{
+    background:#000;
+    color:#fff;
+  }
+
+  .stage{ min-width:0; }
+
+  .preview-shell{
+    min-height:300px;
+    background:#e9e9e9;
+    border:1px solid var(--ui-line);
+    padding:12px;
+    overflow:auto;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+  }
+
+  canvas{
+    display:block;
+    max-width:100%;
+    max-height:calc(100vh - 58px);
+    width:auto;
+    height:auto;
+    background:#fff;
+    box-shadow:0 0 0 1px rgba(0,0,0,.08);
+  }
+
+  .note{
+    font-size:10px;
+    line-height:1.42;
+    color:#555;
+    margin-top:8px;
+  }
+
+  .hidden{ display:none !important; }
+
+  @media (max-width:850px){
+    .app{ grid-template-columns:1fr; }
+    .panel{
+      position:relative;
+      top:0;
+      max-height:none;
+    }
+    canvas{ max-height:none; }
+  }
+
+  :root { --ui-bg:#f7f7f4; --ui-line:#d2d2ca; --ui-text:#111; }
+  body { background:var(--ui-bg); padding:24px; padding: max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left)); }
+  .app { gap:24px; grid-template-columns:360px minmax(0,1fr); }
+  .panel { background:transparent; border:0; padding:0 12px 0 0; top:24px; max-height:calc(100dvh - 48px); }
+  h1 { font-size:20px; letter-spacing:-.6px; line-height:1.2; margin-bottom:6px; }
+  .intro { font-size:13px; line-height:1.5; margin:0 0 22px; color:#555; }
+  .group { margin-top:20px; padding-top:18px; }
+  label { font-size:13px; line-height:1.5; margin-bottom:8px; font-weight:500; }
+  textarea { font:16px/1.5 -apple-system,BlinkMacSystemFont,sans-serif; min-height:146px; padding:12px; border-radius:0; }
+  input[type=number] { height:46px; font-size:16px; border-radius:0; }
+  input[type=file] { font-size:14px; min-height:44px; }
+  input::file-selector-button { min-height:44px; border:1px solid #aaa; background:#fff; margin-right:8px; padding:8px; font:inherit; }
+  button { min-height:46px; font-size:13px; padding:10px; border-radius:0; touch-action:manipulation; }
+  .segmented button { padding:8px 4px; line-height:1.35; }
+  button:disabled { opacity:.5; cursor:wait; }
+  button:focus-visible, input:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible { outline:3px solid #465dde; outline-offset:3px; }
+  input[type=range] { height:44px; accent-color:#111; }
+  .check { min-height:44px; font-size:14px; }
+  .check input { width:22px; height:22px; accent-color:#111; }
+  .check label { padding:10px 0; flex:1; cursor:pointer; }
+  .note { font-size:12px; line-height:1.6; color:#555; }
+  .value { font-size:12px; }
+  .stage { position:sticky; top:24px; }
+  .preview-heading { display:flex; justify-content:space-between; align-items:center; font-size:12px; margin:0 0 12px; color:#555; }
+  .preview-shell { background:#e9e9e4; padding:24px; border:0; min-height:240px; align-items:center; }
+  canvas { max-height:calc(100dvh - 210px); object-fit:contain; }
+  .actions { display:flex; gap:8px; align-items:center; margin-top:16px; }
+  .actions button { width:auto; flex:1; }
+  .status { font-size:12px; line-height:1.5; color:#555; min-height:36px; margin:10px 0 0; }
+  details { border-top:1px solid var(--ui-line); margin-top:20px; }
+  summary { padding:16px 0; font-size:14px; min-height:48px; cursor:pointer; }
+  details .group:first-of-type { border-top:0; }
+  dialog { border:1px solid #111; padding:24px; width:min(560px,calc(100% - 32px)); max-height:85dvh; overflow:auto; background:#f7f7f4; color:#111; }
+  dialog::backdrop { background:rgba(0,0,0,.45); }
+  dialog h2 { margin:0 0 8px; font-size:20px; }
+  #exportImage { display:block; width:100%; height:auto; max-height:45dvh; object-fit:contain; background:#e9e9e4; margin:16px 0; }
+  .download-link { display:flex; min-height:46px; border:1px solid #111; background:#111; color:#fff; align-items:center; justify-content:center; font-size:14px; text-decoration:none; }
+  dialog .buttons { margin:12px 0; }
+  .help { font-size:12px; line-height:1.6; }
+  @media (max-width:850px) {
+    body { padding:16px; padding: max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(126px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
+    html { scroll-padding-bottom:calc(140px + env(safe-area-inset-bottom)); }
+    textarea,input,button,summary { scroll-margin-block:16px; }
+    .app { grid-template-columns:minmax(0,1fr); gap:24px; }
+    .stage { grid-row:1; position:static; }
+    .panel { position:static; max-height:none; overflow:visible; padding:0; min-width:0; }
+    .preview-shell { padding:16px; min-height:160px; }
+    canvas { max-width:100%; max-height:38dvh; }
+    .actions { position:fixed; z-index:10; bottom:0; left:0; right:0; margin:0; display:grid; grid-template-columns:1fr; padding:12px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); background:#f7f7f4; border-top:1px solid var(--ui-line); }
+    .actions .status { min-height:0; margin:0; text-align:center; }
+    .actions button { width:100%; min-height:48px; }
+    h1 { font-size:22px; }
+    dialog { padding:20px; }
+  }
+  @media (prefers-reduced-motion:no-preference) { button { transition:background-color .12s; } }
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <aside class="panel">
+    <h1>koldsleep<br>Title / Post Maker</h1><p class="intro">텍스트를 편집하고, PNG로 저장하세요.</p>
+
+    <div class="group">
+      <label>콘텐츠 유형</label>
+      <div class="segmented two" id="contentModeButtons">
+        <button type="button" class="active" data-content-mode="title">타이틀</button>
+        <button type="button" data-content-mode="post">게시글</button>
+      </div>
+
+      <div class="note">
+        타이틀은 지금까지처럼 내용에 딱 붙는 박스입니다.
+        게시글은 정해진 폭 안에서 자동 줄바꿈되고 박스 높이가 내용에 맞춰 자동 결정됩니다.
+      </div>
+    </div>
+
+    <div class="group">
+      <label>출력 규격</label>
+      <div class="segmented three" id="presetButtons">
+        <button type="button" class="active" data-preset="custom">사용자 지정</button>
+        <button type="button" data-preset="instagram">Instagram 4:5</button>
+        <button type="button" data-preset="twitter">X / Twitter</button>
+      </div>
+
+      <div class="note">
+        Instagram: 1080 × 1350px (4:5)<br>
+        X / Twitter: 1600 × 900px (16:9)
+      </div>
+    </div>
+
+    <div class="group">
+      <label>색상</label>
+      <div class="segmented two" id="themeButtons">
+        <button type="button" class="active" data-theme="light">흰 배경 · 검정 박스</button>
+        <button type="button" data-theme="dark">검정 배경 · 흰 박스</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <label for="textInput">텍스트</label>
+      <textarea id="textInput">koldsleep Lying Contest
+《콜드슬립 거짓말 대회》
+koldsleep, Seoul
+2026</textarea>
+    </div>
+
+    <div class="group">
+      <div class="row">
+        <div>
+          <label for="fontSize">폰트 크기 (pt)</label>
+          <input id="fontSize" type="number" min="4" max="200" step="0.5" value="10">
+        </div>
+        <div>
+          <label for="padding">박스 안쪽 여백 (px)</label>
+          <input id="padding" type="number" min="0" max="200" step="1" value="2">
+        </div>
+      </div>
+
+      <div id="postWidthGroup" class="hidden" style="margin-top:10px">
+        <label>게시글 박스 폭</label>
+        <div class="range-line">
+          <input id="postBoxWidth" type="range" min="25" max="80" step="1" value="44">
+          <div class="value" id="postBoxWidthValue">44%</div>
+        </div>
+      </div>
+
+      <label style="margin-top:10px">텍스트 정렬</label>
+      <div class="segmented four" id="alignButtons">
+        <button type="button" class="active" data-align="left">왼쪽</button>
+        <button type="button" data-align="center">중앙</button>
+        <button type="button" data-align="right">오른쪽</button>
+        <button type="button" data-align="justify">양쪽</button>
+      </div>
+
+      <div class="check">
+        <input id="mirrorText" type="checkbox" checked>
+        <label for="mirrorText" style="margin:0">텍스트 블록 거울 뒤집기</label>
+      </div>
+
+      <div class="buttons">
+        <button id="randomizeBtn" type="button">랜덤 폰트 새로고침</button>
+        <button id="resetTextBtn" type="button">예시 텍스트 복원</button>
+      </div>
+
+      <div class="note">
+        `koldsleep`과 `콜드슬립`은 글자별 랜덤 폰트.
+        각 단어에 Galmuri 픽셀 폰트 최소 1글자가 포함됩니다.
+        영문은 대소문자도 랜덤입니다.
+      </div>
+    </div>
+
+    <details><summary>배경 사진 · 픽셀화 · 이미지 효과</summary>
+    <div class="group">
+      <label for="imageInput">배경 사진</label>
+      <input id="imageInput" type="file" accept="image/*">
+
+      <div class="buttons" style="margin-top:7px">
+        <button id="removeImageBtn" type="button">사진 제거</button>
+        <button id="resetImageBtn" type="button">필터 초기화</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <label>픽셀화</label>
+      <div class="range-line">
+        <input id="pixelSize" type="range" min="1" max="80" step="1" value="1">
+        <div class="value" id="pixelSizeValue">1px</div>
+      </div>
+
+      <label style="margin-top:9px">흑백화</label>
+      <div class="range-line">
+        <input id="grayscale" type="range" min="0" max="100" step="1" value="0">
+        <div class="value" id="grayscaleValue">0%</div>
+      </div>
+
+      <label style="margin-top:9px">블러</label>
+      <div class="range-line">
+        <input id="blur" type="range" min="0" max="30" step="0.5" value="0">
+        <div class="value" id="blurValue">0px</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <label>Levels — Black point</label>
+      <div class="range-line">
+        <input id="blackPoint" type="range" min="0" max="120" step="1" value="0">
+        <div class="value" id="blackPointValue">0</div>
+      </div>
+
+      <label style="margin-top:9px">Levels — White point</label>
+      <div class="range-line">
+        <input id="whitePoint" type="range" min="135" max="255" step="1" value="255">
+        <div class="value" id="whitePointValue">255</div>
+      </div>
+
+      <label style="margin-top:9px">Levels — Gamma</label>
+      <div class="range-line">
+        <input id="gamma" type="range" min="0.2" max="3" step="0.05" value="1">
+        <div class="value" id="gammaValue">1.00</div>
+      </div>
+
+      <label style="margin-top:9px">대비</label>
+      <div class="range-line">
+        <input id="contrast" type="range" min="-100" max="100" step="1" value="0">
+        <div class="value" id="contrastValue">0</div>
+      </div>
+    </div>
+
+    </details>
+    <div class="group" id="customSizeGroup">
+      <div class="row">
+        <div>
+          <label for="canvasWidth">PNG 너비</label>
+          <input id="canvasWidth" type="number" min="200" max="8000" step="10" value="1440">
+        </div>
+        <div>
+          <label for="canvasHeight">PNG 높이</label>
+          <input id="canvasHeight" type="number" min="200" max="8000" step="10" value="900">
+        </div>
+      </div>
+
+      <button id="applySizeBtn" type="button" style="margin-top:7px">캔버스 크기 적용</button>
+    </div>
+
+
+    <details><summary>iPhone 홈 화면에서 사용하기</summary><p class="help">Safari에서 배포된 주소를 열고 공유 메뉴의 ‘홈 화면에 추가’를 선택하세요. 사진과 텍스트는 서버로 전송되지 않습니다. 편집 중인 내용은 이 브라우저에 자동 저장됩니다.</p></details>
+  </aside>
+
+  <main class="stage"><div class="preview-heading"><span>미리보기</span><span id="dimensionLabel">1440 × 900 px</span></div>
+    <div class="preview-shell">
+      <canvas id="canvas" width="1440" height="900" role="img" aria-label="타이틀 및 게시글 출력 미리보기"></canvas>
+    </div>
+    <div class="actions"><button id="saveBtn" class="primary" type="button">PNG 만들기 · 저장 / 공유</button><p id="status" class="status" role="status" aria-live="polite">텍스트와 설정을 바꾸면 미리보기에 반영됩니다.</p></div>
+
+  </main>
+
+</div>
+
+<dialog id="exportDialog" aria-labelledby="exportTitle">
+<h2 id="exportTitle">PNG 준비 완료</h2><p class="help" id="exportInfo"></p>
+<img id="exportImage" alt="저장할 PNG 이미지">
+<a id="downloadLink" class="download-link" download>PNG 파일 저장</a>
+<div class="buttons"><button id="shareBtn" type="button">공유 · 사진에 저장</button><button id="closeExport" type="button">편집으로 돌아가기</button></div>
+<p class="help" id="shareStatus" role="status">iPhone에서는 공유 메뉴에서 ‘이미지 저장’을 선택하세요. 공유가 지원되지 않으면 위 이미지를 길게 눌러 저장할 수 있습니다.</p>
+</dialog>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("canvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently:true });
+
+  const DEFAULT_TITLE = `koldsleep Lying Contest
+《콜드슬립 거짓말 대회》
+koldsleep, Seoul
+2026`;
+
+  const DEFAULT_POST = `2026.09.28.
+콜드슬립 인스톨레이션은 이러한 콜드슬립을 실재하는 물리적 공간에서 혹은 허구적·주관적·신뢰할 수 없는 내러티브, 그리고 누군가의 꿈속에서 콜드슬립이 나타날 수 있도록, 콜드슬립을 설치하는 방법 및 관련 도구를 제공해야 한다. 콜드슬립 인스톨레이션은 콜드네트워크, 콜드키티 등의 방법으로 전개된다.`;
+
+  const pixelFonts = ["Galmuri7","Galmuri9","Galmuri11","Galmuri14"];
+
+  const enFontPool = [
+    "Galmuri7","Galmuri9","Galmuri11","Galmuri14",
+    "Menlo","Monaco","Courier New","Didot","Bodoni 72",
+    "Times New Roman","Impact","Arial Black","Helvetica Neue"
+  ];
+
+  const koFontPool = [
+    "Galmuri7","Galmuri9","Galmuri11","Galmuri14",
+    "AppleMyungjo","Batang","Apple SD Gothic Neo","Malgun Gothic"
+  ];
+
+  let bgImage = null;
+  let imageToken=0;
+  let randomMap = [];
+  let renderToken = 0;
+  let textAlignMode = "left";
+  let contentMode = "title";
+  let preset = "custom";
+  let theme = "light";
+
+  const clamp = (v,min,max) => Math.max(min, Math.min(max,v));
+  const randomItem = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  function valueOf(id){ const input=$(id); const n=Number(input.value); return Number.isFinite(n) ? n : Number(input.defaultValue)||0; }
+  const MAX_PIXELS=16000000;
+  let exportURL=null, exportFile=null, rendering=null, saving=false;
+  let saveTimer;
+  const drafts={title:{text:DEFAULT_TITLE,fontSize:10,padding:2},post:{text:DEFAULT_POST,fontSize:18,padding:2}};
+  function status(message){ $("status").textContent=message; }
+  function rememberDraft(){ drafts[contentMode]={text:$("textInput").value,fontSize:valueOf("fontSize"),padding:valueOf("padding")}; }
+  function persist(){
+    rememberDraft(); clearTimeout(saveTimer); saveTimer=setTimeout(()=>{
+      try { localStorage.setItem("koldsleep-maker-v31",JSON.stringify({drafts,contentMode,preset,theme,textAlignMode,mirror:$("mirrorText").checked,width:canvas.width,height:canvas.height,postWidth:valueOf("postBoxWidth")})); } catch(e) {}
+    },250);
+  }
+
+  function setRangeLabels(){
+    $("pixelSizeValue").textContent = `${valueOf("pixelSize")}px`;
+    $("grayscaleValue").textContent = `${valueOf("grayscale")}%`;
+    $("blurValue").textContent = `${valueOf("blur")}px`;
+    $("blackPointValue").textContent = `${valueOf("blackPoint")}`;
+    $("whitePointValue").textContent = `${valueOf("whitePoint")}`;
+    $("gammaValue").textContent = valueOf("gamma").toFixed(2);
+    $("contrastValue").textContent = `${valueOf("contrast")}`;
+    $("postBoxWidthValue").textContent = `${valueOf("postBoxWidth")}%`;
+  }
+
+  function baseColor(){ return theme === "light" ? "#ffffff" : "#000000"; }
+  function boxColor(){ return theme === "light" ? "#000000" : "#ffffff"; }
+  function textColor(){ return theme === "light" ? "#ffffff" : "#000000"; }
+
+  function isPixel(font){ return pixelFonts.includes(font); }
+
+  function tokenizeLine(line){
+    const result = [];
+    let i = 0;
+
+    while(i < line.length){
+      const koTarget = "콜드슬립";
+      const enTarget = "koldsleep";
+
+      if(line.slice(i, i + koTarget.length) === koTarget){
+        const fonts = Array.from({length:koTarget.length}, () => randomItem(koFontPool));
+        fonts[Math.floor(Math.random()*fonts.length)] = randomItem(pixelFonts);
+
+        [...koTarget].forEach((char,index)=>{
+          result.push({ char, font:fonts[index], weight:"400" });
+        });
+
+        i += koTarget.length;
+        continue;
+      }
+
+      const candidate = line.slice(i, i + enTarget.length);
+
+      if(candidate.toLowerCase() === enTarget){
+        const fonts = Array.from({length:enTarget.length}, () => randomItem(enFontPool));
+        fonts[Math.floor(Math.random()*fonts.length)] = randomItem(pixelFonts);
+
+        [...enTarget].forEach((char,index)=>{
+          result.push({
+            char:Math.random() < 0.5 ? char.toLowerCase() : char.toUpperCase(),
+            font:fonts[index],
+            weight:(fonts[index] === "Impact" || fonts[index] === "Arial Black") ? "700" : "400"
+          });
+        });
+
+        i += enTarget.length;
+        continue;
+      }
+
+      result.push({ char:line[i], font:"Helvetica Neue", weight:"400" });
+      i++;
+    }
+
+    return result;
+  }
+
+  function randomizeTypography(){
+    randomMap = $("textInput").value.split("\n").map(tokenizeLine);
+    render();
+  }
+
+  const loadedFonts=new Map();
+  async function ensureFonts(){
+    if(!document.fonts) return;
+
+    const px = Math.max(10, valueOf("fontSize") * 96 / 72);
+    const families = new Set();
+    randomMap.flat().forEach(t => families.add(t.font));
+
+    await Promise.all(
+      [...families].map(f => {
+        if(!loadedFonts.has(f)) loadedFonts.set(f,document.fonts.load(`16px "${f}"`).catch(()=>{status("폰트를 불러오지 못했습니다. 페이지를 새로 열어 주세요.");}));
+        return loadedFonts.get(f);
+      })
+    );
+  }
+
+  function setCanvasSize(w,h){
+    if(!Number.isFinite(w)||!Number.isFinite(h)||w<200||h<200||w*h>MAX_PIXELS){
+      status("크기가 너무 큽니다. 가로 × 세로를 1,600만 픽셀 이하로 설정하세요."); return false;
+    }
+    canvas.width = w;
+    canvas.height = h;
+    $("canvasWidth").value = w;
+    $("canvasHeight").value = h;
+    $("dimensionLabel").textContent=`${w} × ${h} px`;
+    status(`출력 크기 ${w} × ${h} px를 적용했습니다.`);
+    return true;
+  }
+
+  function applyPreset(nextPreset){
+    preset = nextPreset;
+
+    if(preset === "instagram"){
+      setCanvasSize(1080,1350);
+      $("customSizeGroup").classList.add("hidden");
+    }else if(preset === "twitter"){
+      setCanvasSize(1600,900);
+      $("customSizeGroup").classList.add("hidden");
+    }else{
+      $("customSizeGroup").classList.remove("hidden");
+      setCanvasSize(
+        clamp(Math.round(valueOf("canvasWidth")),200,8000),
+        clamp(Math.round(valueOf("canvasHeight")),200,8000)
+      );
+    }
+
+    render();
+  }
+
+  function coverRect(img,w,h){
+    const ir = img.width / img.height;
+    const cr = w / h;
+    let dw,dh,dx,dy;
+
+    if(ir > cr){
+      dh = h; dw = h*ir; dx = (w-dw)/2; dy = 0;
+    }else{
+      dw = w; dh = w/ir; dx = 0; dy = (h-dh)/2;
+    }
+    return {dx,dy,dw,dh};
+  }
+
+  function processLevels(imageData){
+    const d = imageData.data;
+    const black = valueOf("blackPoint");
+    let white = valueOf("whitePoint");
+    const gamma = valueOf("gamma");
+    const grayAmt = valueOf("grayscale") / 100;
+    const contrast = valueOf("contrast");
+
+    if(white <= black + 1) white = black + 1;
+
+    const cf = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
+    for(let i=0;i<d.length;i+=4){
+      let r=d[i], g=d[i+1], b=d[i+2];
+
+      const convert = (v) => {
+        let n = clamp((v-black)/(white-black),0,1);
+        n = Math.pow(n,1/gamma);
+        v = n*255;
+        v = cf*(v-128)+128;
+        return clamp(v,0,255);
+      };
+
+      r=convert(r); g=convert(g); b=convert(b);
+
+      if(grayAmt>0){
+        const lum = 0.2126*r + 0.7152*g + 0.0722*b;
+        r = r*(1-grayAmt) + lum*grayAmt;
+        g = g*(1-grayAmt) + lum*grayAmt;
+        b = b*(1-grayAmt) + lum*grayAmt;
+      }
+
+      d[i]=r; d[i+1]=g; d[i+2]=b;
+    }
+
+    return imageData;
+  }
+
+  function blurPixels(image,radius){
+    const {width:w,height:h,data:d}=image; const temp=new Uint8ClampedArray(d.length); const r=Math.ceil(radius), n=2*r+1;
+    for(let y=0;y<h;y++) for(let c=0;c<4;c++){
+      let sum=0;for(let k=-r;k<=r;k++)sum+=d[(y*w+clamp(k,0,w-1))*4+c];
+      for(let x=0;x<w;x++){temp[(y*w+x)*4+c]=sum/n;sum+=d[(y*w+clamp(x+r+1,0,w-1))*4+c]-d[(y*w+clamp(x-r,0,w-1))*4+c];}
+    }
+    for(let x=0;x<w;x++) for(let c=0;c<4;c++){
+      let sum=0;for(let k=-r;k<=r;k++)sum+=temp[(clamp(k,0,h-1)*w+x)*4+c];
+      for(let y=0;y<h;y++){d[(y*w+x)*4+c]=sum/n;sum+=temp[(clamp(y+r+1,0,h-1)*w+x)*4+c]-temp[(clamp(y-r,0,h-1)*w+x)*4+c];}
+    }
+    return image;
+  }
+  function drawBackground(){
+    const w=canvas.width, h=canvas.height;
+
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle=baseColor();
+    ctx.fillRect(0,0,w,h);
+
+    if(!bgImage) return;
+
+    const pixel = Math.max(1,Math.round(valueOf("pixelSize")));
+    const smallW = Math.max(1,Math.ceil(w/pixel));
+    const smallH = Math.max(1,Math.ceil(h/pixel));
+
+    const tiny=document.createElement("canvas");
+    tiny.width=smallW;
+    tiny.height=smallH;
+    const tctx=tiny.getContext("2d");
+
+    const r=coverRect(bgImage,smallW,smallH);
+    tctx.imageSmoothingEnabled=true;
+    tctx.drawImage(bgImage,r.dx,r.dy,r.dw,r.dh);
+
+    const expanded=document.createElement("canvas");
+    expanded.width=w;
+    expanded.height=h;
+    const ectx=expanded.getContext("2d",{willReadFrequently:true});
+
+    ectx.imageSmoothingEnabled=pixel<=1;
+    ectx.drawImage(tiny,0,0,smallW,smallH,0,0,w,h);
+
+    let imageData=ectx.getImageData(0,0,w,h);
+    imageData=processLevels(imageData);
+    const blur=valueOf("blur");
+    const nativeBlur="filter" in ctx;
+    if(blur>0&&!nativeBlur) imageData=blurPixels(imageData,blur);
+    ectx.putImageData(imageData,0,0);
+    ctx.save();
+    ctx.filter=blur>0&&nativeBlur ? `blur(${blur}px)` : "none";
+
+    if(blur>0&&nativeBlur){
+      const extra=Math.ceil(blur*2);
+      ctx.drawImage(expanded,-extra,-extra,w+extra*2,h+extra*2);
+    }else{
+      ctx.drawImage(expanded,0,0);
+    }
+    ctx.restore();
+  }
+
+  function canvasFont(token,px){
+    return `${token.weight || "400"} ${px}px "${token.font}", sans-serif`;
+  }
+
+  function tokenWidth(token,px){
+    ctx.font=canvasFont(token,px);
+    return ctx.measureText(token.char).width;
+  }
+
+  function titleMetrics(){
+    const pt=clamp(valueOf("fontSize"),4,200);
+    const px=pt*96/72;
+    const letterSpacing=-0.05*px;
+    const lineHeight=px;
+
+    const widths=randomMap.map(tokens=>{
+      let width=0;
+      tokens.forEach((token,index)=>{
+        width += tokenWidth(token,px);
+        if(index<tokens.length-1) width += letterSpacing;
+      });
+      return Math.max(0,width);
+    });
+
+    return {
+      px,letterSpacing,lineHeight,widths,
+      maxWidth:Math.max(0,...widths),
+      height:Math.max(lineHeight,randomMap.length*lineHeight)
+    };
+  }
+
+  function wrapTokens(tokens,maxWidth,px,letterSpacing){
+    if(tokens.length===0) return [[]];
+
+    const lines=[];
+    let current=[];
+    let currentWidth=0;
+
+    for(const token of tokens){
+      const w=tokenWidth(token,px);
+      const addition = current.length ? letterSpacing+w : w;
+
+      if(current.length && currentWidth + addition > maxWidth){
+        lines.push(current);
+        current=[token];
+        currentWidth=w;
+      }else{
+        current.push(token);
+        currentWidth += addition;
+      }
+    }
+
+    if(current.length) lines.push(current);
+    return lines;
+  }
+
+  function buildPostLines(innerWidth,px,letterSpacing){
+    const result=[];
+
+    randomMap.forEach((paragraph,index)=>{
+      if(paragraph.length===0){
+        result.push([]);
+      }else{
+        result.push(...wrapTokens(paragraph,innerWidth,px,letterSpacing));
+      }
+
+      if(index<randomMap.length-1){
+        result.push(null);
+      }
+    });
+
+    while(result.length && result[result.length-1]===null) result.pop();
+    return result;
+  }
+
+  function measureTokens(tokens,px,letterSpacing){
+    if(!tokens || !tokens.length) return 0;
+    let width=0;
+
+    tokens.forEach((token,index)=>{
+      width += tokenWidth(token,px);
+      if(index<tokens.length-1) width += letterSpacing;
+    });
+    return width;
+  }
+
+  function drawTokensLine(bctx,tokens,y,startX,targetWidth,px,letterSpacing,mode){
+    if(tokens===null) return;
+    if(!tokens.length) return;
+
+    const naturalWidth=measureTokens(tokens,px,letterSpacing);
+    let x=startX;
+    let extra=0;
+
+    if(mode==="center"){
+      x += (targetWidth-naturalWidth)/2;
+    }else if(mode==="right"){
+      x += targetWidth-naturalWidth;
+    }else if(mode==="justify" && tokens.length>1){
+      extra=(targetWidth-naturalWidth)/(tokens.length-1);
+    }
+
+    tokens.forEach((token,index)=>{
+      bctx.font=canvasFont(token,px);
+      bctx.fillText(token.char,x,y);
+      x += bctx.measureText(token.char).width;
+      if(index<tokens.length-1) x += letterSpacing+extra;
+    });
+  }
+
+  function drawTitle(){
+    if(!randomMap.length) return;
+
+    const m=titleMetrics();
+    const pad=clamp(valueOf("padding"),0,200);
+
+    const blockW=Math.max(1,Math.ceil(m.maxWidth+pad*2));
+    const blockH=Math.max(1,Math.ceil(m.height+pad*2));
+
+    const block=document.createElement("canvas");
+    block.width=blockW;
+    block.height=blockH;
+    const bctx=block.getContext("2d");
+
+    bctx.fillStyle=boxColor();
+    bctx.fillRect(0,0,blockW,blockH);
+    bctx.fillStyle=textColor();
+    bctx.textAlign="left";
+    bctx.textBaseline="top";
+
+    randomMap.forEach((tokens,i)=>{
+      drawTokensLine(
+        bctx,tokens,
+        pad+i*m.lineHeight,
+        pad,m.maxWidth,
+        m.px,m.letterSpacing,textAlignMode
+      );
+    });
+
+    const x=Math.round((canvas.width-blockW)/2);
+    const y=Math.round((canvas.height-blockH)/2);
+    paintBlock(block,x,y);
+  }
+
+  function drawPost(){
+    const pt=clamp(valueOf("fontSize"),4,200);
+    const px=pt*96/72;
+    const letterSpacing=-0.035*px;
+    const lineHeight=px*1.28;
+    const paragraphGap=lineHeight*0.3;
+
+    const boxRatio=clamp(valueOf("postBoxWidth"),25,80)/100;
+    const blockW=Math.max(80,Math.round(canvas.width*boxRatio));
+
+    /*
+      게시글 박스의 안쪽 여백은 사용자가 입력한 px 값을 그대로 사용한다.
+      0이면 실제 0px, 2면 실제 2px.
+    */
+    const autoPad=clamp(valueOf("padding"),0,200);
+
+    const innerW=Math.max(1,blockW-autoPad*2);
+    const wrapped=buildPostLines(innerW,px,letterSpacing);
+
+    let contentHeight=0;
+    wrapped.forEach(line=>{
+      contentHeight += line===null ? paragraphGap : lineHeight;
+    });
+
+    if(contentHeight===0) contentHeight=lineHeight;
+
+    const blockH=Math.max(1,Math.ceil(contentHeight+autoPad*2));
+
+    const block=document.createElement("canvas");
+    block.width=blockW;
+    block.height=blockH;
+    const bctx=block.getContext("2d");
+
+    bctx.fillStyle=boxColor();
+    bctx.fillRect(0,0,blockW,blockH);
+    bctx.fillStyle=textColor();
+    bctx.textAlign="left";
+    bctx.textBaseline="top";
+
+    let y=autoPad;
+
+    wrapped.forEach((tokens,index)=>{
+      if(tokens===null){
+        y += paragraphGap;
+        return;
+      }
+
+      /*
+        양쪽 정렬은 게시글의 마지막 시각적 줄까지 강제로 늘이지 않도록,
+        자연스럽게 보이게 짧은 줄은 왼쪽 정렬한다.
+      */
+      let mode=textAlignMode;
+
+      if(mode==="justify"){
+        const natural=measureTokens(tokens,px,letterSpacing);
+        if(natural < innerW*0.72) mode="left";
+      }
+
+      drawTokensLine(
+        bctx,tokens,y,
+        autoPad,innerW,
+        px,letterSpacing,mode
+      );
+      y += lineHeight;
+    });
+
+    const x=Math.round((canvas.width-blockW)/2);
+    const yPos=Math.round((canvas.height-blockH)/2);
+    paintBlock(block,x,yPos);
+  }
+
+  function paintBlock(block,x,y){
+    ctx.save();
+
+    if($("mirrorText").checked){
+      ctx.translate(x+block.width,y);
+      ctx.scale(-1,1);
+      ctx.drawImage(block,0,0);
+    }else{
+      ctx.drawImage(block,x,y);
+    }
+
+    ctx.restore();
+  }
+
+  function render(){
+    persist();
+    rendering=renderFrame();
+    return rendering;
+  }
+  async function renderFrame(){
+    const token=++renderToken;
+
+    if(!randomMap.length){
+      randomizeTypography();
+      return;
+    }
+
+    await ensureFonts();
+    if(token!==renderToken) return;
+
+    drawBackground();
+
+    if(contentMode==="post") drawPost();
+    else drawTitle();
+  }
+
+  function activateButtons(selector,dataKey,value){
+    document.querySelectorAll(selector).forEach(btn=>{
+      const active=btn.dataset[dataKey]===value;
+      btn.classList.toggle("active",active);
+      btn.setAttribute("aria-pressed",String(active));
+    });
+  }
+
+  function resetImageControls(){
+    $("pixelSize").value=1;
+    $("grayscale").value=0;
+    $("blur").value=0;
+    $("blackPoint").value=0;
+    $("whitePoint").value=255;
+    $("gamma").value=1;
+    $("contrast").value=0;
+    setRangeLabels();
+    render();
+  }
+
+  document.querySelectorAll("[data-content-mode]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const previous=contentMode;
+      rememberDraft();
+      contentMode=btn.dataset.contentMode;
+
+      activateButtons("[data-content-mode]","contentMode",contentMode);
+      $("postWidthGroup").classList.toggle("hidden",contentMode!=="post");
+
+      if(previous!==contentMode){
+        const draft=drafts[contentMode];
+        $("textInput").value=draft.text;
+        $("fontSize").value=draft.fontSize;
+        $("padding").value=draft.padding;
+        randomizeTypography();
+      }else{
+        render();
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-preset]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      activateButtons("[data-preset]","preset",btn.dataset.preset);
+      applyPreset(btn.dataset.preset);
+    });
+  });
+
+  document.querySelectorAll("[data-theme]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      theme=btn.dataset.theme;
+      activateButtons("[data-theme]","theme",theme);
+      render();
+    });
+  });
+
+  document.querySelectorAll("[data-align]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      textAlignMode=btn.dataset.align;
+      activateButtons("[data-align]","align",textAlignMode);
+      render();
+    });
+  });
+
+  $("textInput").addEventListener("input",randomizeTypography);
+  $("fontSize").addEventListener("input",render);
+  $("padding").addEventListener("input",render);
+  $("postBoxWidth").addEventListener("input",()=>{
+    setRangeLabels();
+    render();
+  });
+  $("mirrorText").addEventListener("change",render);
+
+  $("randomizeBtn").addEventListener("click",randomizeTypography);
+
+  $("resetTextBtn").addEventListener("click",()=>{
+    $("textInput").value=contentMode==="post" ? DEFAULT_POST : DEFAULT_TITLE;
+    randomizeTypography();
+  });
+
+  $("imageInput").addEventListener("change",(e)=>{
+    const file=e.target.files && e.target.files[0];
+    if(!file) return;
+
+    const token=++imageToken; const url=URL.createObjectURL(file); const img=new Image();
+    status("사진 불러오는 중…");
+    img.onload=()=>{
+      URL.revokeObjectURL(url); if(token!==imageToken)return;
+      const scale=Math.min(1,4096/Math.max(img.width,img.height),Math.sqrt(12000000/(img.width*img.height)));
+      if(scale<1){const reduced=document.createElement("canvas"); reduced.width=Math.round(img.width*scale); reduced.height=Math.round(img.height*scale); reduced.getContext("2d").drawImage(img,0,0,reduced.width,reduced.height); bgImage=reduced;}else bgImage=img;
+      status("사진을 적용했습니다. 사진은 이 기기에서만 처리됩니다."); render();
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url); if(token===imageToken)status("사진을 열 수 없습니다. JPG 또는 PNG 파일을 선택해 주세요.");};
+    img.src=url;
+  });
+
+  $("removeImageBtn").addEventListener("click",()=>{
+    ++imageToken; bgImage=null;
+    status("배경 사진을 제거했습니다.");
+    $("imageInput").value="";
+    render();
+  });
+
+  $("resetImageBtn").addEventListener("click",resetImageControls);
+
+  [
+    "pixelSize","grayscale","blur",
+    "blackPoint","whitePoint","gamma","contrast"
+  ].forEach(id=>{
+    $(id).addEventListener("input",()=>{
+      setRangeLabels();
+      render();
+    });
+  });
+
+  $("applySizeBtn").addEventListener("click",()=>{
+    if(preset!=="custom") return;
+
+    const w=clamp(Math.round(valueOf("canvasWidth")),200,8000);
+    const h=clamp(Math.round(valueOf("canvasHeight")),200,8000);
+
+    setCanvasSize(w,h);
+    render();
+  });
+
+  $("saveBtn").addEventListener("click",async()=>{
+    if(saving)return; saving=true; $("saveBtn").disabled=true; status("PNG를 만들고 있습니다…");
+    try{
+      await render(); let generation;
+      do { generation=renderToken; await rendering; } while(generation!==renderToken);
+      const outputWidth=canvas.width, outputHeight=canvas.height, outputMode=contentMode, outputPreset=preset;
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+      if(!blob)throw new Error("empty");
+      if(exportURL)URL.revokeObjectURL(exportURL);
+      exportURL=URL.createObjectURL(blob);
+      const stamp=new Date().toISOString().replace(/[:.]/g,"-");
+      const filename=`koldsleep-${outputMode}-${outputPreset}-${stamp}.png`;
+      exportFile=new File([blob],filename,{type:"image/png"});
+      $("exportImage").src=exportURL;
+      $("downloadLink").href=exportURL; $("downloadLink").download=filename;
+      $("exportInfo").textContent=`${outputWidth} × ${outputHeight} px · ${(blob.size/1024/1024).toFixed(2)} MB`;
+      const shareSupported=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[exportFile]}));
+      $("shareBtn").classList.toggle("hidden",!shareSupported);
+      $("shareStatus").textContent=shareSupported ? "iPhone에서는 공유 메뉴에서 ‘이미지 저장’을 선택하세요. 위 이미지를 길게 눌러 저장할 수도 있습니다." : "PNG 파일 저장을 누르세요. iPhone에서 다운로드가 어려우면 위 이미지를 길게 눌러 저장하세요.";
+      $("exportDialog").showModal(); status("PNG 준비 완료. 저장하거나 공유해 주세요.");
+    }catch(e){status("PNG를 만들지 못했습니다. 출력 크기를 줄인 뒤 다시 시도해 주세요.");}
+    finally{saving=false;$("saveBtn").disabled=false;}
+  });
+  $("shareBtn").addEventListener("click",async()=>{
+    try { await navigator.share({files:[exportFile]}); $("shareStatus").textContent="공유 메뉴를 닫았습니다. 편집을 계속할 수 있습니다."; }
+    catch(e){ $("shareStatus").textContent=e.name==="AbortError" ? "공유를 취소했습니다. 다시 공유하거나 PNG 파일을 저장하세요." : "공유를 열 수 없습니다. PNG 파일 저장을 누르거나 이미지를 길게 눌러 저장하세요."; }
+  });
+  $("closeExport").addEventListener("click",()=>$("exportDialog").close());
+  // Semantic labels and pressed states for touch and assistive technology.
+  document.querySelectorAll("input[type=range]").forEach(input=>{
+    const label=input.closest(".range-line").previousElementSibling;
+    if(label&&label.tagName==="LABEL")label.htmlFor=input.id;
+  });
+  document.querySelectorAll(".segmented button").forEach(button=>button.setAttribute("aria-pressed",String(button.classList.contains("active"))));
+  try{
+    const saved=JSON.parse(localStorage.getItem("koldsleep-maker-v31")||"null");
+    if(saved){
+      for(const mode of ["title","post"]){const d=saved.drafts?.[mode];if(d&&typeof d.text==="string")drafts[mode]={text:d.text,fontSize:clamp(Number(d.fontSize)||10,4,200),padding:clamp(Number(d.padding)||0,0,200)};}
+      contentMode=["title","post"].includes(saved.contentMode)?saved.contentMode:"title";
+      preset=["custom","instagram","twitter"].includes(saved.preset)?saved.preset:"custom";
+      theme=saved.theme==="dark"?"dark":"light";
+      textAlignMode=["left","center","right","justify"].includes(saved.textAlignMode)?saved.textAlignMode:"left";
+      $("textInput").value=drafts[contentMode].text; $("fontSize").value=drafts[contentMode].fontSize; $("padding").value=drafts[contentMode].padding;
+      $("mirrorText").checked=!!saved.mirror; $("postBoxWidth").value=clamp(Number(saved.postWidth)||44,25,80);
+      setCanvasSize(clamp(Number(saved.width)||1440,200,8000),clamp(Number(saved.height)||900,200,8000));
+      $("postWidthGroup").classList.toggle("hidden",contentMode!=="post");
+      activateButtons("[data-content-mode]","contentMode",contentMode);activateButtons("[data-preset]","preset",preset);activateButtons("[data-theme]","theme",theme);activateButtons("[data-align]","align",textAlignMode);
+      applyPreset(preset); status("이 브라우저에 저장된 텍스트와 설정을 불러왔습니다. 배경 사진은 다시 선택해 주세요.");
+    }
+  }catch(e){}
+  setRangeLabels();
+  randomizeTypography();
+})();
+</script>
+
+</body>
+</html>
